@@ -40,7 +40,8 @@ export function Viewer(iv, iframes, report, useFrames, isPDF) {
     this._ixNodeMap = {};
     this._continuedAtMap = {};        
     this._currentShowElement = null;
-    this._mzInit = false;    
+    this._mzInit = false;
+    this._credentials = [];
 }
 
 Viewer.prototype.initialize = function() {
@@ -57,6 +58,7 @@ Viewer.prototype.initialize = function() {
             }
         })()
             .then(() => viewer._iv.setProgress("Preparing document") )
+            .then(() => viewer._loadCredentials())
             .then(() => {
                 this._buildContinuationMap();
                 this._report.setIXNodeMap(this._ixNodeMap);
@@ -73,6 +75,14 @@ Viewer.prototype.initialize = function() {
                 });    
             });
     });
+}
+
+Viewer.prototype._loadCredentials = function() {
+    let viewer = this;
+    console.log("trying to fetch")
+    return fetch("http://localhost:8723/verify?url="+encodeURIComponent(window.location.href))
+        .then(response => response.json())
+        .then(data => {this._report.setCredentials(data); console.log("data", data)})
 }
 
 function localName(e) {
@@ -501,6 +511,37 @@ Viewer.prototype.showItemById = function (id, force) {
         if (elt.length > 0) {
             this.showElement(elt, force);
         }
+    }
+}
+
+Viewer.prototype.highlightTags = function(on, factIds) {
+    let groups = this._report.namespaceGroups()
+    var report = this._report;
+    var viewer = this;
+    if(on) {
+        factIds.forEach((factId) => {
+            var ixn = viewer._ixNodeMap[factId];
+            var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            elements.addClass("ixbrl-highlight");
+
+            if (!ixn.footnote) {
+                var fact = report.getItemById(factId);
+                if (fact) {
+                    var i = groups[fact.conceptQName().prefix];
+                    if (i !== undefined) {
+                        elements.addClass("ixbrl-highlight-" + i);
+                    }
+                } else {
+                    $(this).addClass("ixbrl-highlight-missing");
+                }
+            }
+
+        })
+
+    } else {
+        $(".ixbrl-element", this._contents).removeClass (function (i, className) {
+            return (className.match (/(^|\s)ixbrl-highlight\S*/g) || []).join(' ');
+        });
     }
 }
 

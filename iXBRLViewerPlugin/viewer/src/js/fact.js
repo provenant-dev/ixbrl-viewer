@@ -25,10 +25,15 @@ export function Fact(report, factId) {
     this._ixNode = report.getIXNodeForItemId(factId);
     this._report = report;
     this.id = factId;
+    this._signatures = [];
 }
 
 Fact.prototype.report = function() {
     return this._report;
+}
+
+Fact.prototype.addSignature = function(sig) {
+    this._signatures.push(sig);
 }
 
 Fact.prototype.getLabel = function(rolePrefix, withPrefix) {
@@ -145,6 +150,10 @@ Fact.prototype.dimensions = function () {
         }
     });
     return dims;
+}
+
+Fact.prototype.signatures = function () {
+    return this._signatures;
 }
 
 Fact.prototype.isMonetaryValue = function () {

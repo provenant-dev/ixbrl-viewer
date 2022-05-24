@@ -5,3 +5,4 @@ iXBRLViewerPlugin/viewer/*.xhtml
 iXBRLViewerPlugin/viewer/dist/ixbrlviewer.dev.js
 iXBRLViewerPlugin/viewer/font
 iXBRLViewerPlugin/viewer/image
+.idea/

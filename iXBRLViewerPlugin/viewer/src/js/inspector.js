@@ -62,7 +62,9 @@ export function Inspector(iv) {
         $(this).closest("#inspector").removeClass("search-mode");
     });
     this._optionsMenu = new Menu($("#display-options-menu"));
+    this._signaturesMenu = new Menu($("#signatures-menu"));
     this.buildDisplayOptionsMenu();
+    this.buildSignaturesMenu();
 
     var inspector = this;
     // Listen to messages posted to this window
@@ -78,6 +80,7 @@ Inspector.prototype.initialize = function (report) {
             inspector._search = new ReportSearch(report);
             inspector.setupSearchControls();
             inspector.buildDisplayOptionsMenu();
+            inspector.buildSignaturesMenu();
             resolve();
         });
     });
@@ -136,6 +139,29 @@ Inspector.prototype.buildDisplayOptionsMenu = function () {
     }
     this._iv.callPluginMethod("extendDisplayOptionsMenu", this._optionsMenu);
 
+}
+
+Inspector.prototype.buildSignaturesMenu = function () {
+    var inspector = this;
+    this._signaturesMenu.reset();
+    if (this._report) {
+        let credMap = this._report.credentials();
+        this._report.availableCredentials().forEach((credId) => {
+            let cred = credMap[credId]
+            this._signaturesMenu.addCredentialItem(cred, "",function(checked) {inspector.highlightTags(checked, credId)}, "select-credential")
+        })
+    }
+}
+
+Inspector.prototype.highlightTags = function (checked, credId) {
+    let cred = this._report.credentials()[credId]
+    if ('f' in cred) {
+        let factIds = cred['f'].map((fact) => {return fact['i']})
+        this._viewer.highlightTags(checked, factIds);
+    } else {
+        var inspector = this;
+        this._viewer.highlightAllTags(checked, inspector._report.namespaceGroups());
+    }
 }
 
 Inspector.prototype.highlightAllTags = function (checked) {
@@ -260,6 +286,10 @@ Inspector.prototype.updateCalculation = function (fact, elr) {
     $('.calculations .tree').empty().append(this._calculationHTML(fact, elr));
 }
 
+Inspector.prototype.updateSignatures = function (fact, elr) {
+    $('.signatures .tree').empty().append(this._signatureHTML(fact, elr));
+}
+
 Inspector.prototype.updateValidationResults = function (fact) {
     $('#inspector .fact-validation-results').empty();
     if (fact.hasValidationResults()) {
@@ -363,6 +393,76 @@ Inspector.prototype._calculationHTML = function (fact, elr) {
         a.addCard($("<span></span>").text(label), calcBody, e == elr);
 
     });
+    return a.contents();
+}
+
+Inspector.prototype._signatureHTML = function (fact, elr) {
+    let a = new Accordian();
+
+    fact.signatures().forEach(function (signature) {
+        let table =  $('<table class="fact-properties"><tbody></tbody></table>')
+        let tbody = table.find("tbody");
+        let img = $("img.signature-icon").clone()
+        img.css("display", "inline")
+        $("<tr>")
+            .append($("<th></th>").text("Legal Name"))
+            .append($("<td></td>").attr("align", "left").text(signature['a']['personLegalName']))
+            .append($("<td></td>").attr("rowspan", 2).attr("align", "right").append(img)).attr("valign", "bottom")
+            .appendTo(tbody);
+        $("<tr>")
+            .append($("<th></th>").text("Role"))
+            .append($("<td></td>").attr("colspan", 2).text(signature['a']['officialRole']))
+            .appendTo(tbody);
+        let lei = signature['a']['LEI'];
+        let row = $("<tr>")
+            .append($("<th></th>").text("LEI"))
+            .append($("<td></td>").attr("colspan", 2).text(lei))
+            .appendTo(tbody);
+        row.addClass("uri");
+        row.find("td").wrapInner($("<a>").attr("href","https://search.gleif.org/#/record/"+lei));
+
+        let type = signature['type'] === 'oor' ? "Official":"Engagement Context";
+        a.addCard($("<span></span>").text("Signature with vLEI " + type + " Role"), table, true);
+
+    });
+
+    let full = this._report.fullSignatureCredentials()
+    full.forEach(function(vira) {
+        let type = '';
+        let cred = {};
+        if('oor' in vira) {
+            cred = vira['oor']
+            type = "Official";
+        } else if ('ecr' in vira) {
+            cred= vira["ecr"];
+            type = "Engagement Context"
+        } else {
+            return;
+        }
+        let table =  $('<table class="fact-properties"><tbody></tbody></table>')
+        let tbody = table.find("tbody");
+        let img = $("img.signature-icon").clone()
+        img.css("display", "inline")
+        $("<tr>")
+            .append($("<th></th>").text("Legal Name"))
+            .append($("<td></td>").attr("align", "left").text(cred['personLegalName']))
+            .append($("<td></td>").attr("rowspan", 2).attr("align", "right").append(img)).attr("valign", "bottom")
+            .appendTo(tbody);
+        $("<tr>")
+            .append($("<th></th>").text("Role"))
+            .append($("<td></td>").attr("colspan", 2).text(cred['officialRole']))
+            .appendTo(tbody);
+        let lei = cred['LEI'];
+        let row = $("<tr>")
+            .append($("<th></th>").text("LEI"))
+            .append($("<td></td>").attr("colspan", 2).text(lei))
+            .appendTo(tbody);
+        row.addClass("uri");
+        row.find("td").wrapInner($("<a>").attr("href","https://search.gleif.org/#/record/"+lei));
+
+        a.addCard($("<span></span>").text("Signature with vLEI " + type + " Role"), table, true);
+
+    })
     return a.contents();
 }
 
@@ -611,6 +711,7 @@ Inspector.prototype.update = function () {
             $('#inspector').removeClass('footnote-mode');
 
             this.updateCalculation(cf);
+            this.updateSignatures(cf)
             this.updateFootnotes(cf);
             //this.updateAnchoring(cf);
             $('div.references').empty().append(this._referencesHTML(cf));

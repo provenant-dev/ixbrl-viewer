@@ -25,6 +25,7 @@ export function iXBRLReport (data) {
     // A map of IDs to Fact and Footnote objects
     this._items = {};
     this._ixNodeMap = {};
+    this._credentials = {};
     this._viewerOptions = new ViewerOptions();
     this._reverseRelationshipCache = {};
 }
@@ -35,6 +36,10 @@ export function iXBRLReport (data) {
 iXBRLReport.prototype.setIXNodeMap = function(ixData) {
     this._ixNodeMap = ixData;
     this._initialize();
+}
+
+iXBRLReport.prototype.setCredentials = function(credData) {
+    this._credentials = credData;
 }
 
 iXBRLReport.prototype._initialize = function () {
@@ -60,6 +65,30 @@ iXBRLReport.prototype._initialize = function () {
             fn.addFact(f);
         });
     }
+    this._assignSignatures();
+}
+
+iXBRLReport.prototype._assignSignatures = function() {
+    $.each(this._credentials, (said, vira) => {
+        if ('f' in vira) {
+            let data = {}
+            if('oor' in vira) {
+                data = {t: 'oor', a: vira["oor"] };
+            } else if ('ecr' in vira) {
+                data = {t: 'ecr', a: vira["ecr"] };
+            } else {
+                return;
+            }
+
+            let attrs = vira['f']
+            attrs.forEach((attr) => {
+                let id = attr['i'];
+                if (id in this._items) {
+                    this._items[id].addSignature(data);
+                }
+            })
+        }
+    })
 }
 
 iXBRLReport.prototype.getLabel = function(c, rolePrefix, showPrefix, viewerOptions) {
@@ -90,6 +119,29 @@ iXBRLReport.prototype.getLabel = function(c, rolePrefix, showPrefix, viewerOptio
         s += label;
         return s;
     }
+}
+
+iXBRLReport.prototype.availableCredentials = function() {
+    if (!this._availableCredentials) {
+        this._availableCredentials = Object.keys(this._credentials)
+    }
+
+    return this._availableCredentials;
+}
+
+iXBRLReport.prototype.credentials = function() {
+    return this._credentials;
+}
+
+iXBRLReport.prototype.fullSignatureCredentials = function() {
+    let full = [];
+    $.each(this._credentials, (said, vira) => {
+        if (!('f' in vira)) {
+            full.push(vira)
+        }
+    });
+
+    return full;
 }
 
 iXBRLReport.prototype.availableLanguages = function() {

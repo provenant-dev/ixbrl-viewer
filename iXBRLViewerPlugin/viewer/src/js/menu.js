@@ -90,3 +90,39 @@ Menu.prototype.addCheckboxGroup = function(values, names, def, callback, name, a
     });
     
 }
+
+Menu.prototype.addCredentialItem = function(cred, def, callback, name, after) {
+    var menu = this;
+    let text = ""
+    if("oor" in cred) {
+        let oor = cred["oor"]
+        if ("f" in cred) {
+            text += "Partially Signed By: " + oor["personLegalName"]
+        } else {
+            text += "Signed in Full By: " + oor["personLegalName"]
+        }
+        text += " Official Role: " + oor["officialRole"] + " with LEI: " + oor["LEI"]
+
+    } else if ("ecr" in cred) {
+        let ecr = cred["ecr"]
+        if ("f" in cred) {
+            text += "Partially Signed By: " + ecr["personLegalName"]
+        } else {
+            text += "Signed in Full By: " + ecr["personLegalName"]
+        }
+        text = "Engagement Role: " + ecr["officialRole"] + " with LEI: " + ecr["LEI"]
+    } else {
+        return;
+    }
+
+
+    var item = $('<div class="item checkbox"></div>')
+        .text(text)
+        .data("iv-menu-item-name", cred['i'])
+        .click(function () {
+            $(this).toggleClass("checked");
+            callback($(this).hasClass("checked"));
+            menu.close();
+        });
+    this._add(item, after);
+}
