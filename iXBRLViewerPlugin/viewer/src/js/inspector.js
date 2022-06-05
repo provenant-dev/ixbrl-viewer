@@ -146,9 +146,11 @@ Inspector.prototype.buildSignaturesMenu = function () {
     this._signaturesMenu.reset();
     if (this._report) {
         let credMap = this._report.credentials();
-        this._report.availableCredentials().forEach((credId) => {
+        this._report.availableCredentials().forEach((credId, idx) => {
             let cred = credMap[credId]
-            this._signaturesMenu.addCredentialItem(cred, "",function(checked) {inspector.highlightTags(checked, credId)}, "select-credential")
+            this._signaturesMenu.addCredentialItem(cred, "",function(checked) {
+                inspector.highlightSignedTags(checked, credId, "ixbrl-signed-" + idx)
+            }, "select-credential")
         })
     }
 }
@@ -167,6 +169,23 @@ Inspector.prototype.highlightTags = function (checked, credId) {
 Inspector.prototype.highlightAllTags = function (checked) {
     var inspector = this;
     this._viewer.highlightAllTags(checked, inspector._report.namespaceGroups());
+}
+
+
+Inspector.prototype.highlightSignedTags = function (checked, credId, signedClass) {
+    let cred = this._report.credentials()[credId]
+    if ('f' in cred) {
+        let factIds = cred['f'].map((fact) => {return fact['i']})
+        this._viewer.highlightSignedTags(checked, factIds, signedClass);
+    } else {
+        var inspector = this;
+        this._viewer.highlightAllSignedTags(checked, inspector._report.namespaceGroups(), signedClass);
+    }
+}
+
+Inspector.prototype.highlightAllSignedTags = function (checked, signedClass) {
+    var inspector = this;
+    this._viewer.highlightAllTags(checked, inspector._report.namespaceGroups(), signedClass);
 }
 
 Inspector.prototype.factListRow = function(f) {

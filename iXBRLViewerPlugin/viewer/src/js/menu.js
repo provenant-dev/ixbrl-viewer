@@ -93,36 +93,62 @@ Menu.prototype.addCheckboxGroup = function(values, names, def, callback, name, a
 
 Menu.prototype.addCredentialItem = function(cred, def, callback, name, after) {
     var menu = this;
-    let text = ""
+    let signType = ""
+    let signer = ""
+    let role = ""
+    let lei = ""
+    let img = $("img.gleif-logo").clone()
+    img.css("display", "inline").removeClass("gleif-logo")
+
+
     if("oor" in cred) {
         let oor = cred["oor"]
+        lei =  oor["LEI"]
+        signer = oor["personLegalName"];
         if ("f" in cred) {
-            text += "Partially Signed By: " + oor["personLegalName"]
+            signType += "Partially Signed By "
         } else {
-            text += "Signed in Full By: " + oor["personLegalName"]
+            signType += "Signed in Full By "
         }
-        text += " Official Role: " + oor["officialRole"] + " with LEI: " + oor["LEI"]
+        role = " Official Role: " + oor["officialRole"]
 
     } else if ("ecr" in cred) {
         let ecr = cred["ecr"]
+        lei = ecr["LEI"]
+        signer = ecr["personLegalName"];
         if ("f" in cred) {
-            text += "Partially Signed By: " + ecr["personLegalName"]
+            signType += "Partially Signed By "
         } else {
-            text += "Signed in Full By: " + ecr["personLegalName"]
+            signType += "Signed in Full By "
         }
-        text = "Engagement Role: " + ecr["officialRole"] + " with LEI: " + ecr["LEI"]
+        role = "Engagement Role: " + ecr["officialRole"]
     } else {
         return;
     }
 
 
-    var item = $('<div class="item checkbox"></div>')
-        .text(text)
-        .data("iv-menu-item-name", cred['i'])
-        .click(function () {
-            $(this).toggleClass("checked");
-            callback($(this).hasClass("checked"));
-            menu.close();
-        });
+    let item = $('<div class="item checkbox"></div>')
+    let table = $('<table style="width: 100%"></table>')
+    item.append(table);
+    let tr = $('<tr></tr>');
+    table.append(tr);
+
+    let td = $('<td style="padding-right: 5px;width:285px"></td>')
+    tr.append(td)
+    td.append($('<b></b>').text(signType+signer))
+        .append($('<p></p>').text(role))
+        .append($('<p></p>').text("LEI: " + lei))
+
+    let imgTD = $('<td valign="top"></td>')
+        .append(img)
+        .data("iv-menu-item-name", cred['i']);
+
+    tr.append(imgTD)
+    item.click(function () {
+        $(this).toggleClass("checked");
+        callback($(this).hasClass("checked"));
+        menu.close();
+    })
+
     this._add(item, after);
 }

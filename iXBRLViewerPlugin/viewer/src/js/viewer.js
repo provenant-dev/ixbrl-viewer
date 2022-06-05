@@ -79,10 +79,9 @@ Viewer.prototype.initialize = function() {
 
 Viewer.prototype._loadCredentials = function() {
     let viewer = this;
-    console.log("trying to fetch")
-    return fetch("http://localhost:8723/verify?url="+encodeURIComponent(window.location.href))
+    return fetch("./verify.json")
         .then(response => response.json())
-        .then(data => {this._report.setCredentials(data); console.log("data", data)})
+        .then(data => {viewer._report.setCredentials(data); console.log("data", data)})
 }
 
 function localName(e) {
@@ -575,6 +574,49 @@ Viewer.prototype.highlightAllTags = function (on, namespaceGroups) {
     else {
         $(".ixbrl-element", this._contents).removeClass (function (i, className) {
             return (className.match (/(^|\s)ixbrl-highlight\S*/g) || []).join(' ');
+        });
+    }
+}
+
+
+Viewer.prototype.highlightSignedTags = function(on, factIds, signedClass) {
+    let groups = this._report.namespaceGroups()
+    var report = this._report;
+    var viewer = this;
+    if(on) {
+        factIds.forEach((factId) => {
+            var ixn = viewer._ixNodeMap[factId];
+            var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            elements.addClass(signedClass);
+        })
+
+    } else {
+        $(".ixbrl-element", this._contents).removeClass (function (i, className) {
+            let re = new RegExp("(^|\\s)"+signedClass+"\\S*", "g")
+            return (className.match (re) || []).join(' ');
+        });
+    }
+}
+
+Viewer.prototype.highlightAllSignedTags = function (on, namespaceGroups, signedClass) {
+    var groups = {};
+    $.each(namespaceGroups, function (i, ns) {
+        groups[ns] = i;
+    });
+    var report = this._report;
+    var viewer = this;
+    if (on) {
+        $(".ixbrl-element:not(.ixbrl-continuation)", this._contents).each(function () {
+            var factId = $(this).data('ivid')[0];
+            var ixn = viewer._ixNodeMap[factId];
+            var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            elements.addClass(signedClass);
+         });
+    }
+    else {
+        $(".ixbrl-element", this._contents).removeClass (function (i, className) {
+            let re = new RegExp("(^|\\s)"+signedClass+"\\S*", "g")
+            return (className.match (re) || []).join(' ');
         });
     }
 }
