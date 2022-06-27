@@ -79,9 +79,14 @@ Viewer.prototype.initialize = function() {
 
 Viewer.prototype._loadCredentials = function() {
     let viewer = this;
-    return fetch("./verify.json")
+    return fetch("verify.json")
         .then(response => response.json())
-        .then(data => {viewer._report.setCredentials(data); console.log("data", data)})
+        .then(data => viewer._report.setCredentials(data))
+        .catch((reason) => {console.log("Unable to load credentials", reason)})
+    // return fetch("http://localhost:8723/verify?url="+encodeURIComponent(window.location.href))
+    //     .then(response => response.json())
+    //     .then(data => viewer._report.setCredentials(data))
+    //     .catch((reason) => {console.log("Unable to load credentials", reason)})
 }
 
 function localName(e) {
@@ -283,13 +288,25 @@ Viewer.prototype._postProcessiXBRLNode = function (container, node, fact) {
     var htmlTooltip;
     if (fact) {
         var title = fact.getLabel("std") || fact.conceptName();
+
+        let sigCount = fact.signatures().length + this._report.fullSignatureCredentials().length;
         if (fact.concept().isTaxonomyExtension()) {
-            $(node).attr('ix-title', `<i>${escapeHtml(title)}</i> (Extension)`);
+            if (sigCount > 0) {
+                $(node).attr('ix-title', `<i>${escapeHtml(title)}</i> (Extension). <i><br/>${sigCount} Signature${sigCount === 1 ? '': 's'}</i>`);
+            } else {
+                $(node).attr('ix-title', `<i>${escapeHtml(title)}</i> (Extension)`);
+            }
             htmlTooltip = true;
         } else {
-            $(node).attr('ix-title', title);
-            htmlTooltip = false;
+            if (sigCount > 0) {
+                $(node).attr('ix-title', `${title} <br/><i>${sigCount} Signature${sigCount === 1 ? '': 's'}</i>`);
+                htmlTooltip = true;
+            } else {
+                $(node).attr('ix-title', title);
+                htmlTooltip = false;
+            }
         }
+
     } else {
         console.log(`Fact with id '${id}' is not found in the report data`);
     }
@@ -587,6 +604,10 @@ Viewer.prototype.highlightSignedTags = function(on, factIds, signedClass) {
         factIds.forEach((factId) => {
             var ixn = viewer._ixNodeMap[factId];
             var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            let signedClasses = elements.attr('class').split(/\s+/).filter(cls => cls.startsWith("ixbrl-signed-"));
+            if (signedClasses.length > 0) {
+                elements.addClass("multi-ixbrl-signed");
+            }
             elements.addClass(signedClass);
         })
 
@@ -595,6 +616,14 @@ Viewer.prototype.highlightSignedTags = function(on, factIds, signedClass) {
             let re = new RegExp("(^|\\s)"+signedClass+"\\S*", "g")
             return (className.match (re) || []).join(' ');
         });
+        factIds.forEach((factId) => {
+            var ixn = viewer._ixNodeMap[factId];
+            var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            let signedClasses = elements.attr('class').split(/\s+/).filter(cls => cls.startsWith("ixbrl-signed-"));
+            if (signedClasses.length < 2) {
+                elements.removeClass("multi-ixbrl-signed");
+            }
+        })
     }
 }
 

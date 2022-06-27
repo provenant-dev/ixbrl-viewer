@@ -91,7 +91,7 @@ Menu.prototype.addCheckboxGroup = function(values, names, def, callback, name, a
     
 }
 
-Menu.prototype.addCredentialItem = function(cred, def, callback, name, after) {
+Menu.prototype.addCredentialItem = function(cred, idx, def, callback, name, after) {
     var menu = this;
     let signType = ""
     let signer = ""
@@ -121,13 +121,13 @@ Menu.prototype.addCredentialItem = function(cred, def, callback, name, after) {
         } else {
             signType += "Signed in Full By "
         }
-        role = "Engagement Role: " + ecr["officialRole"]
+        role = "Engagement Role: " + ecr["engagementContextRole"]
     } else {
         return;
     }
 
 
-    let item = $('<div class="item checkbox"></div>')
+    let item = $('<div class="item checkbox signed ' + 'highlight-' + idx + '"></div>')
     let table = $('<table style="width: 100%"></table>')
     item.append(table);
     let tr = $('<tr></tr>');

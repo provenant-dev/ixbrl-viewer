@@ -148,9 +148,9 @@ Inspector.prototype.buildSignaturesMenu = function () {
         let credMap = this._report.credentials();
         this._report.availableCredentials().forEach((credId, idx) => {
             let cred = credMap[credId]
-            this._signaturesMenu.addCredentialItem(cred, "",function(checked) {
+            this._signaturesMenu.addCredentialItem(cred, idx, "",function(checked) {
                 inspector.highlightSignedTags(checked, credId, "ixbrl-signed-" + idx)
-            }, "select-credential")
+            }, "select-credential", )
         })
     }
 }
@@ -419,9 +419,11 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
     let a = new Accordian();
 
     fact.signatures().forEach(function (signature) {
+        console.log(signature)
         let table =  $('<table class="fact-properties"><tbody></tbody></table>')
         let tbody = table.find("tbody");
         let img = $("img.signature-icon").clone()
+        let fieldName = signature['t'] === 'oor' ? "officialRole":"engagementContextRole";
         img.css("display", "inline")
         $("<tr>")
             .append($("<th></th>").text("Legal Name"))
@@ -430,7 +432,7 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
             .appendTo(tbody);
         $("<tr>")
             .append($("<th></th>").text("Role"))
-            .append($("<td></td>").attr("colspan", 2).text(signature['a']['officialRole']))
+            .append($("<td></td>").attr("colspan", 2).text(signature['a'][fieldName]))
             .appendTo(tbody);
         let lei = signature['a']['LEI'];
         let row = $("<tr>")
@@ -440,7 +442,7 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
         row.addClass("uri");
         row.find("td").wrapInner($("<a>").attr("href","https://search.gleif.org/#/record/"+lei));
 
-        let type = signature['type'] === 'oor' ? "Official":"Engagement Context";
+        let type = signature['t'] === 'oor' ? "Official":"Engagement Context";
         a.addCard($("<span></span>").text("Signature with vLEI " + type + " Role"), table, true);
 
     });
@@ -448,13 +450,16 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
     let full = this._report.fullSignatureCredentials()
     full.forEach(function(vira) {
         let type = '';
+        let fieldName = '';
         let cred = {};
         if('oor' in vira) {
             cred = vira['oor']
             type = "Official";
+            fieldName = "officialRole";
         } else if ('ecr' in vira) {
             cred= vira["ecr"];
-            type = "Engagement Context"
+            type = "Engagement Context";
+            fieldName = "engagementContextRole";
         } else {
             return;
         }
@@ -469,7 +474,7 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
             .appendTo(tbody);
         $("<tr>")
             .append($("<th></th>").text("Role"))
-            .append($("<td></td>").attr("colspan", 2).text(cred['officialRole']))
+            .append($("<td></td>").attr("colspan", 2).text(cred[fieldName]))
             .appendTo(tbody);
         let lei = cred['LEI'];
         let row = $("<tr>")
