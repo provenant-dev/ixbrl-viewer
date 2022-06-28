@@ -419,7 +419,6 @@ Inspector.prototype._signatureHTML = function (fact, elr) {
     let a = new Accordian();
 
     fact.signatures().forEach(function (signature) {
-        console.log(signature)
         let table =  $('<table class="fact-properties"><tbody></tbody></table>')
         let tbody = table.find("tbody");
         let img = $("img.signature-icon").clone()

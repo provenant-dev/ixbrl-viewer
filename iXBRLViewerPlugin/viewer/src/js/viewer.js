@@ -597,8 +597,6 @@ Viewer.prototype.highlightAllTags = function (on, namespaceGroups) {
 
 
 Viewer.prototype.highlightSignedTags = function(on, factIds, signedClass) {
-    let groups = this._report.namespaceGroups()
-    var report = this._report;
     var viewer = this;
     if(on) {
         factIds.forEach((factId) => {
@@ -639,6 +637,10 @@ Viewer.prototype.highlightAllSignedTags = function (on, namespaceGroups, signedC
             var factId = $(this).data('ivid')[0];
             var ixn = viewer._ixNodeMap[factId];
             var elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            let signedClasses = elements.attr('class').split(/\s+/).filter(cls => cls.startsWith("ixbrl-signed-"));
+            if (signedClasses.length > 0) {
+                elements.addClass("multi-ixbrl-signed");
+            }
             elements.addClass(signedClass);
          });
     }
@@ -647,6 +649,15 @@ Viewer.prototype.highlightAllSignedTags = function (on, namespaceGroups, signedC
             let re = new RegExp("(^|\\s)"+signedClass+"\\S*", "g")
             return (className.match (re) || []).join(' ');
         });
+        $(".ixbrl-element", this._contents).each(function() {
+            let factId = $(this).data('ivid')[0];
+            let ixn = viewer._ixNodeMap[factId];
+            let elements = viewer.elementsForItemIds([factId].concat(ixn.continuationIds()));
+            let signedClasses = elements.attr('class').split(/\s+/).filter(cls => cls.startsWith("ixbrl-signed-"));
+            if (signedClasses.length < 2) {
+                elements.removeClass("multi-ixbrl-signed");
+            }
+        })
     }
 }
 
