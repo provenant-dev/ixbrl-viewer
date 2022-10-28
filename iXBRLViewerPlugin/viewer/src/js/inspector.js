@@ -44,6 +44,7 @@ export function Inspector(iv) {
     this._iv = iv;
     this._chart = new IXBRLChart();
     this._viewerOptions = new ViewerOptions()
+    this._selectedFacts = [];
     
     $(".collapsible-header").click(function () { 
         var d = $(this).closest(".collapsible-section");
@@ -69,6 +70,29 @@ export function Inspector(iv) {
     var inspector = this;
     // Listen to messages posted to this window
     $(window).on("message", function(e) { inspector.handleMessage(e) });
+    $("#inspector-head .sign-button").click(function () {
+        debugger;
+        var selectedFacts = inspector.selectedFacts();
+        if (selectedFacts != null && selectedFacts != undefined && selectedFacts.length > 0) {
+            var extractedFacts = [];
+            $.each(selectedFacts, (i, fact) => {
+                if (fact instanceof Fact) {
+                    var f = {
+                        i: fact.id,
+                        // t: "",
+                        d: "",
+                        v: fact.f.v,
+                        c: fact.f.a.c,
+                        e: fact.f.a.e,
+                        p: fact.f.a.p,
+                    }
+                    extractedFacts.push(f)
+                }
+            });
+            console.log(extractedFacts);
+        }
+        console.log(selectedFacts);
+    });
 }
 
 Inspector.prototype.initialize = function (report) {
@@ -204,12 +228,22 @@ Inspector.prototype.factListRow = function(f) {
         .mouseenter(() => this._viewer.linkedHighlightFact(f))
         .mouseleave(() => this._viewer.clearLinkedHighlightFact(f))
         .data('ivid', f.id);
-    $('<div class="select-icon"></div>')
-        .click(() => {
-            this.selectItem(f.id);
-            $('#inspector').removeClass("search-mode");
+    // $('<div class="select-icon"></div>')
+    //     .click(() => {
+    //         this.selectItem(f.id);
+    //         $('#inspector').removeClass("search-mode");
+    //     })
+    //     .appendTo(row)
+    $('<input type="checkbox" class="fact-select-button"></input>')
+        .click((event) => {
+            //this.selectFactForSigning(f.id, event);
         })
         .appendTo(row)
+    // $('<div class="extract-fact"></div>')
+    //     .click((event) => {
+    //         this.selectFactForSigning(f.id, event);
+    //     })
+    //     .appendTo(row)
     $('<div class="title"></div>')
         .text(f.getLabel("std") || f.conceptName())
         .appendTo(row);
@@ -844,4 +878,40 @@ Inspector.prototype.setLanguage = function (lang) {
     this._viewerOptions.language = lang;
     this.update();
     this._search.buildSearchIndex();
+}
+
+/*
+ * Select a fact for signing. 
+ */
+Inspector.prototype.selectFactForSigning = function (id, event) {
+    debugger;
+    var fact = this._report.getItemById(id);
+    var target = $(event.target);
+    if (fact && fact instanceof Fact) {
+        var selectedFacts = this.selectedFacts();
+        var isSelected = selectedFacts.some(x => x.id === fact.id);
+        if (isSelected) {
+            const index = selectedFacts.indexOf(fact);
+            if (index > -1) {
+                selectedFacts.splice(index, 1);
+            }
+            target.removeClass('selected');
+        }
+        else {
+            this.addSelectedFact(fact);
+            target.addClass('selected');
+        }
+    }
+
+    // target.toggleClass("selected");
+    // $('#inspector .search-results .fact-list-item .extract-fact').removeClass('selected');
+    // $('#inspector .search-results .fact-list-item .extract-fact').filter(function () { return $(this).data('ivid') == cf.id }).addClass('selected');            
+}
+
+Inspector.prototype.addSelectedFact = function (fact) {
+    this._selectedFacts.push(fact);
+}
+
+Inspector.prototype.selectedFacts = function () {
+    return this._selectedFacts;
 }

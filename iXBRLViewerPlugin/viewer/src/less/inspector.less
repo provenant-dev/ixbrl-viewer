@@ -224,6 +224,20 @@
             .icon-chevron-left();
           }
         }
+
+        .sign-button {
+          .square-button();
+
+          top: 0;
+          right: 0;
+          position: absolute;
+          margin: 0rem 0.9rem !important;;
+          // margin-right: 0.9rem;
+
+          &::before {            
+            .icon-tag();            
+          }
+        }
       }
 
       .controls {
@@ -423,6 +437,61 @@
           padding: 1rem;
           text-align: center;
         }
+
+        .fact-select-button {
+          float: right;
+          background: #004CB5;
+          width: 2.2rem;
+          height: 3.2rem;
+          text-align: center;
+          color: @icon-grey;
+          box-sizing: border-box;
+          cursor: pointer;
+          padding: 0;
+          font-size: 2.2rem;
+          line-height: 3.2rem;
+          user-select: none;          
+          .clickable();
+
+          &:first-of-type {
+            margin-left: 0.5rem;
+          }
+
+          // &::before {
+          //   .icon-tick();
+          // }
+
+          // &.selected {
+          //   color:@text-light;
+          //   background-color: #e0efe0;
+          //   &::before {
+          //     .icon-close();
+          //   }
+          // }
+        }
+
+        .extract-fact {
+          float: right;
+          .square-button();
+          .clickable();
+
+          &:first-of-type {
+            margin-left: 0.5rem;
+          }
+
+          &::before {
+            .icon-tick();
+          }
+
+          &.selected {
+            color:@text-light;
+            background-color: #e0efe0;
+            &::before {
+              .icon-close();
+            }
+          }
+        }
+
       } /* search results */
     } /* inspector body */
 
@@ -826,6 +895,10 @@
 
     .fact-list-item {
       .block-list-item();
+      background: @fact-background;
+      border: 0.5px solid @fact-border;
+      box-shadow: 0px 0px 4px rgb(0 0 0 / 10%);
+      border-radius: 4px;
 
       .title {
         color: @text-title;
@@ -841,7 +914,9 @@
         .tag();
       }
 
-      &.selected {
+      &.selected {        
+        // border: 0.5px solid @fact-border-selected;
+        // border-left: solid 0.4rem #0085e6;
         .title {
           font-weight: bold;
         }
