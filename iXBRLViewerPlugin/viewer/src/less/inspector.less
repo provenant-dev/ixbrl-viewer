@@ -352,6 +352,22 @@
           }
         }
       }
+
+      .filter-bar {
+        display: flex;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        margin-bottom: 1rem;
+
+        .filter-bar-item {
+          color: #000;
+          border: 1px solid #C4C4C4;
+          flex-grow: 1;
+          padding: 0.5rem;
+          text-align: center;
+          cursor: pointer;
+        }
+      }
     }
 
     .inspector-body {
@@ -438,8 +454,23 @@
           text-align: center;
         }
 
+        .fact-item {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .view-details {
+          text-decoration: underline;
+          position: absolute;
+          bottom: 0;
+          right: 1rem;
+        }
+
         .fact-select-button {
-          float: right;
+          // float: right;
+          position: absolute;
+          top: 0;
+          left: 0.25rem;
           background: #004CB5;
           width: 2.2rem;
           height: 3.2rem;
@@ -494,6 +525,48 @@
 
       } /* search results */
     } /* inspector body */
+
+    .inspector-foot {
+
+      .select-btn {
+        background-color: #B7B7B7;
+        color: #000;
+        font-weight: bold;
+        padding: 1rem;
+        width: 90%;
+        cursor: pointer;
+      }
+
+      .footer-bar {
+        width: 95%;
+        height: 100%;
+        background-color: #BBCBFF;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+      }
+
+      .cancel-btn {
+        border: 1px solid #000;
+        background-color: #BBCBFF;
+        color: #000;
+      }
+
+      .done-btn {
+        margin-right: 1rem;
+        background-color: #000;
+        color: #fff;
+      }
+
+      .cancel-btn, .done-btn {
+        cursor: pointer;
+        border-radius: 2px;
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+      
+    }
 
     .std-label {
       margin-left: 30px;
@@ -851,10 +924,11 @@
       flex-shrink: 0;
       background: #fff;
       width: 100%;
-      height: 3rem;
-      padding-top: 5px;
+      height: 50px;
       margin: 0;
       box-sizing: border-box;
+      position: relative;
+      bottom: 0;
       border-top: @simple-border;
 
       img {
@@ -907,7 +981,7 @@
 
       .dimension {
         color: @text;
-        margin: 0.6rem 0;
+        margin: 0.6rem 0 4rem 0;
       }
 
       .hidden {
@@ -984,4 +1058,22 @@
   padding: 2px 0;
   line-height: 1px;
   border-top: 0.25px solid rgba(255, 255, 255, 0.8); 
+}
+
+.hide {
+  visibility: hidden !important;
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.mt-1 {
+  margin-top: 0.5rem !important;
+}
+
+.ml-3 {
+  margin-left: 3rem !important;
+}
+
+.highlight {
+  background-color: #C4C4C4;
 }

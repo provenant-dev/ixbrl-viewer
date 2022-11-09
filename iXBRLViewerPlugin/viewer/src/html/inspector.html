@@ -95,6 +95,11 @@ limitations under the License.
           </div>
         </div>
       </div>
+      <div id="filterBar" class="filter-bar">
+        <div id="filterItemOne" class="filter-bar-item filter-item-one">All</div>
+        <div id="filterItemTwo" class="filter-bar-item filter-item-one">Selected</div>
+        <div id="filterItemThree" class="filter-bar-item filter-item-one">Unselected</div>
+      </div>
     </div> <!-- inspector-head -->
 
     <div class="inspector-body">
@@ -158,10 +163,16 @@ limitations under the License.
         </div>
       </div>
     </div>
-    <!-- <div class="inspector-foot powered-by">
-        Powered by
-        <a href="https://www.workiva.co.uk/solutions/xbrl-and-ixbrl" target="_blank"><img src="../img/workiva.svg" /></a>
-    </div> -->
+    <div class="inspector-foot powered-by">
+      <button type="button" id="selectBtn" class="select-btn mt-1">Select facts</button>
+      <button type="button" id="editBtn" class="edit-btn mt-1 hide">Edit</button>
+      <div id="footerBar" class="footer-bar hide">
+        <button type="button" id="cancelBtn" class="cancel-btn">Cancel</button>
+        <button type="button" id="doneBtn" class="done-btn">Done</button>
+      </div>
+        <!-- Powered by
+        <a href="https://www.workiva.co.uk/solutions/xbrl-and-ixbrl" target="_blank"><img src="../img/workiva.svg" /></a> -->
+    </div>
   </div>
   <div class="dialog-mask">
   </div>
