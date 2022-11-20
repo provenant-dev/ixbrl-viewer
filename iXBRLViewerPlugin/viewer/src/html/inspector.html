@@ -16,15 +16,15 @@ limitations under the License.
 
 <div id="ixv" xmlns="http://www.w3.org/1999/xhtml">
   <div class="loader loading">
-     <span class="text">Loading iXBRL Viewer</span>
+    <span class="text">Loading iXBRL Viewer</span>
   </div>
   <div id="top-bar">
     <div class="header">
-       <img src="../img/inline-viewer.svg" />
+      <img src="../img/inline-viewer.svg" />
     </div>
     <div class="document-title"></div>
     <div class="menu signature-menu" id='signatures-menu'>
-      <img src="../img/gleif-logo.png" class="gleif-logo" width="64", style="display:none"/>
+      <img src="../img/gleif-logo.png" class="gleif-logo" width="64" , style="display:none" />
 
       <div class="title">Digital Signatures</div>
       <div class="content-container">
@@ -45,15 +45,15 @@ limitations under the License.
         <h1 class="footnote-mode-only">Footnote Properties</h1>
         <div class="back search-mode-only">
         </div>
-        <div class="sign-button search-mode-only">
-        </div>
+        <!-- <div class="sign-button search-mode-only">
+        </div> -->
       </div>
       <div class="controls">
         <div class="search-button">
           <span class="icon-search"></span>
         </div>
         <div class="next-prev">
-            <span class="ixbrl-prev-tag"></span><span class="ixbrl-next-tag"></span>
+          <span class="ixbrl-prev-tag"></span><span class="ixbrl-next-tag"></span>
         </div>
       </div>
 
@@ -66,39 +66,42 @@ limitations under the License.
           <div class="reset">Reset</div>
           <h3>Filter</h3>
           <div class="control-label">
-              Concept Type
+            Concept Type
           </div>
           <select id="search-filter-concept-type">
-              <option value="*">ALL</option>
-              <option value="numeric">Numeric</option>
-              <option value="text">Text</option>
+            <option value="*">ALL</option>
+            <option value="numeric">Numeric</option>
+            <option value="text">Text</option>
           </select>
           <div class="control-label">
-              Period
+            Period
           </div>
           <select id="search-filter-period">
           </select>
-          
+
           <div class="checkboxes">
             <div>
               <label class="checkbox">
-                <input id="search-hidden-fact-filter" type="checkbox" checked="checked"/> Hidden Facts
+                <input id="search-hidden-fact-filter" type="checkbox" checked="checked" /> Hidden Facts
                 <span class="checkmark"></span>
               </label>
             </div>
             <div>
               <label class="checkbox">
-                <input id="search-visible-fact-filter" type="checkbox" checked="checked"/> Visible Facts
+                <input id="search-visible-fact-filter" type="checkbox" checked="checked" /> Visible Facts
                 <span class="checkmark"></span>
               </label>
             </div>
           </div>
         </div>
       </div>
-      <div id="filterBar" class="filter-bar">
-        <div id="filterItemOne" class="filter-bar-item filter-item-one">All</div>
-        <div id="filterItemTwo" class="filter-bar-item filter-item-one">Selected</div>
-        <div id="filterItemThree" class="filter-bar-item filter-item-one">Unselected</div>
+      <div class="divider"></div>
+      <div class="facts-tabs-section">
+        <div class="facts-tabs-bar">
+          <div id="facts-tab-all" class="facts-tab selected"><span>All</span></div>
+          <div id="facts-tab-selected" class="facts-tab"><span>Selected</span></div>
+          <div id="facts-tab-unselected" class="facts-tab"><span>Unselected</span></div>
+        </div>
       </div>
     </div> <!-- inspector-head -->
 
@@ -117,13 +120,13 @@ limitations under the License.
           <div class="footnote-mode-off">
             <div class="collapsible-section">
               <h3 class="collapsible-header">Validation</h3>
-              <div class="collapsible-body fact-validation-results">                
+              <div class="collapsible-body fact-validation-results">
               </div>
-           </div>            
+            </div>
             <div class="collapsible-section">
-               <h3 class="collapsible-header">References</h3>
-               <div class="collapsible-body references">
-               </div>
+              <h3 class="collapsible-header">References</h3>
+              <div class="collapsible-body references">
+              </div>
             </div>
             <div class="collapsible-section">
               <h3 class="collapsible-header">Calculations</h3>
@@ -132,23 +135,23 @@ limitations under the License.
               </div>
             </div>
             <div class="collapsible-section">
-               <h3 class="collapsible-header">Signatures</h3>
+              <h3 class="collapsible-header">Signatures</h3>
               <div class="collapsible-body signatures">
-                <img src="../img/signature.png" class="signature-icon" style="display:none"/>
+                <img src="../img/signature.png" class="signature-icon" style="display:none" />
                 <div class="tree"></div>
-               </div>
+              </div>
             </div>
             <div class="collapsible-section">
-               <h3 class="collapsible-header">Footnotes</h3>
-               <div class="collapsible-body footnotes">
-               </div>
+              <h3 class="collapsible-header">Footnotes</h3>
+              <div class="collapsible-body footnotes">
+              </div>
             </div>
           </div>
           <div class="footnote-details footnote-mode-only">
             <div class="collapsible-section">
               <h3 class="collapsible-header">Associated facts</h3>
-               <div class="collapsible-body footnote-facts fact-list">
-               </div>
+              <div class="collapsible-body footnote-facts fact-list">
+              </div>
             </div>
           </div>
         </div>
@@ -159,18 +162,22 @@ limitations under the License.
         </div>
         <div class="search-overlay">
           <div class="search-overlay-icon"></div>
-          <div class="search-overlay-text"><p class="title">Fact Search</p><p class="text">Please enter some search terms</p></div>
+          <div class="search-overlay-text">
+            <p class="title">Fact Search</p>
+            <p class="text">Please enter some search terms</p>
+          </div>
         </div>
       </div>
     </div>
     <div class="inspector-foot powered-by">
-      <button type="button" id="selectBtn" class="select-btn mt-1">Select facts</button>
+      <button type="button" id="selectBtn" class="select-btn mt-1" style="background-color: #E4F3FE;">Select
+        facts</button>
       <button type="button" id="editBtn" class="edit-btn mt-1 hide">Edit</button>
       <div id="footerBar" class="footer-bar hide">
         <button type="button" id="cancelBtn" class="cancel-btn">Cancel</button>
         <button type="button" id="doneBtn" class="done-btn">Done</button>
       </div>
-        <!-- Powered by
+      <!-- Powered by
         <a href="https://www.workiva.co.uk/solutions/xbrl-and-ixbrl" target="_blank"><img src="../img/workiva.svg" /></a> -->
     </div>
   </div>
@@ -179,12 +186,14 @@ limitations under the License.
   <div id="chart" class="dialog">
     <div class="close"></div>
     <div class="contents">
-      <div class="chart-container" ><canvas id='chart-canvas'></canvas></div>
+      <div class="chart-container"><canvas id='chart-canvas'></canvas></div>
       <div class="other-aspects"></div>
     </div>
   </div>
-  <div id="viewer-pane" >
-    <div class="ixds-tabs"><div class="tab-area"></div></div>
+  <div id="viewer-pane">
+    <div class="ixds-tabs">
+      <div class="tab-area"></div>
+    </div>
     <div id="iframe-container">
       <div class="zoom-in">+</div>
       <div class="zoom-out">-</div>

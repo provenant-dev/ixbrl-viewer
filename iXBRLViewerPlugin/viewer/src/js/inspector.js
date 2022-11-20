@@ -33,12 +33,8 @@ export function Inspector(iv) {
   if ($("#ixv #iframe-container").length == 0) {
     /* AMANA: Portal extensions. Checking if inspector.html already loaded as part of portal template */
     $(require("../html/inspector.html")).prependTo("body");
-    var inspector_css =
-      require("css-loader!less-loader!../less/inspector.less").toString();
-    $('<style id="ixv-style"></style>')
-      .prop("type", "text/css")
-      .text(inspector_css)
-      .appendTo("head");
+    var inspector_css = require("css-loader!less-loader!../less/inspector.less").toString();
+    $('<style id="ixv-style"></style>').prop("type", "text/css").text(inspector_css).appendTo("head");
   }
   /*$('<link id="ixv-favicon" type="image/x-icon" rel="shortcut icon" />')
         .attr('href', require('../img/favicon.ico'))
@@ -68,9 +64,17 @@ export function Inspector(iv) {
   this.buildDisplayOptionsMenu();
   this.buildSignaturesMenu();
 
-  $(".filter-bar-item").click(function (event) {
-    inspector.filterBarClickHandler(event);
+  var inspector = this;
+  // Listen to messages posted to this window
+  $(window).on("message", function (e) {
+    inspector.handleMessage(e);
   });
+
+  //#region PROVENANT: fact selection, signing and verification event handlers
+
+  $(".facts-tab").click(function (event) {
+    inspector.filterBarClickHandler(event);
+  });  
 
   $("#selectBtn").click(function () {
     inspector.initFactSelection();
@@ -80,11 +84,6 @@ export function Inspector(iv) {
     inspector.removeFactSelection();
   });
 
-  var inspector = this;
-  // Listen to messages posted to this window
-  $(window).on("message", function (e) {
-    inspector.handleMessage(e);
-  });
   $("#doneBtn").click(function () {
     // debugger;
     var selectedFacts = inspector.selectedFacts();
@@ -114,36 +113,9 @@ export function Inspector(iv) {
     }
     console.log(selectedFacts);
   });
+
+  //#endregion
 }
-
-Inspector.prototype.initFactSelection = function () {
-  $(".fact-select-button").removeClass("hide");
-  $(".title").addClass("ml-3");
-  $(".dimension").addClass("ml-3");
-  $("#selectBtn").addClass("hide");
-  $("#footerBar").removeClass("hide");
-};
-
-Inspector.prototype.removeFactSelection = function () {
-  $(".fact-select-button").addClass("hide");
-  $(".title").removeClass("ml-3");
-  $(".dimension").removeClass("ml-3");
-  $("#selectBtn").removeClass("hide");
-  $("#footerBar").addClass("hide");
-};
-
-Inspector.prototype.filterBarClickHandler = function (event) {
-  var filterBarItems = document.getElementsByClassName("filter-bar-item");
-  filterBarItems = Object.values(filterBarItems);
-  for (var i = 0; i < filterBarItems.length; i++) {
-    if (filterBarItems[i].id === event.target.id) {
-      $(`#${filterBarItems[i].id}`).addClass("highlight");
-    }
-    if (filterBarItems[i].id !== event.target.id) {
-      $(`#${filterBarItems[i].id}`).removeClass("highlight");
-    }
-  }
-};
 
 Inspector.prototype.initialize = function (report) {
   var inspector = this;
@@ -1054,6 +1026,8 @@ Inspector.prototype.setLanguage = function (lang) {
   this._search.buildSearchIndex();
 };
 
+//#region PROVENANT: fact selection, signing and verification
+
 /*
  * Select a fact for signing.
  */
@@ -1088,3 +1062,39 @@ Inspector.prototype.addSelectedFact = function (fact) {
 Inspector.prototype.selectedFacts = function () {
   return this._selectedFacts;
 };
+
+Inspector.prototype.initFactSelection = function () {
+  $(".fact-select-button").removeClass("hide");
+  $(".title").addClass("ml-3");
+  $(".dimension").addClass("ml-3");
+  $("#selectBtn").addClass("hide");
+  $("#footerBar").removeClass("hide");
+};
+
+Inspector.prototype.removeFactSelection = function () {
+  $(".fact-select-button").addClass("hide");
+  $(".title").removeClass("ml-3");
+  $(".dimension").removeClass("ml-3");
+  $("#selectBtn").removeClass("hide");
+  $("#footerBar").addClass("hide");
+};
+
+
+Inspector.prototype.filterBarClickHandler = function (event) {
+  // var filterBarItems = document.getElementsByClassName("filter-bar-item");
+  // filterBarItems = Object.values(filterBarItems);
+  // for (var i = 0; i < filterBarItems.length; i++) {
+  //   if (filterBarItems[i].id === event.target.id) {
+  //     $(`#${filterBarItems[i].id}`).addClass("highlight");
+  //   }
+  //   if (filterBarItems[i].id !== event.target.id) {
+  //     $(`#${filterBarItems[i].id}`).removeClass("highlight");
+  //   }
+  // }
+
+  $(".facts-tab").removeClass("selected");
+  var selectedTab = $(event.target).closest(".facts-tab");
+  selectedTab.addClass("selected");
+};
+
+//#endregion PROVENANT: fact selection, signing and verification
