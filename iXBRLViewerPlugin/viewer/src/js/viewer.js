@@ -344,16 +344,16 @@ Viewer.prototype._postProcessiXBRLNode = function (container, node, fact) {
   } else {
     console.log(`Fact with id '${id}' is not found in the report data`);
   }
-  $(node).tooltip({
-    html: htmlTooltip,
-    container: container,
-    title: function () {
-      return (
-        $(this).attr("ix-title") ||
-        $(this).parents(".ixbrl-element").attr("ix-title")
-      );
-    },
-  });
+  // $(node).tooltip({
+  //   html: htmlTooltip,
+  //   container: container,
+  //   title: function () {
+  //     return (
+  //       $(this).attr("ix-title") ||
+  //       $(this).parents(".ixbrl-element").attr("ix-title")
+  //     );
+  //   },
+  // });
 };
 
 Viewer.prototype._applyStyles = function () {
