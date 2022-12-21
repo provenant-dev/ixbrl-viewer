@@ -85,19 +85,25 @@ Viewer.prototype.initialize = function () {
   });
 };
 
-Viewer.prototype._loadCredentials = function () {
+Viewer.prototype._loadCredentials = function () {  
   let viewer = this;
-  return viewer._report.setCredentials(verify);
-  // return fetch("https://ixbrviewer.pages.dev/verify.json")
-  //   .then((response) => response.json())
-  //   .then((data) => viewer._report.setCredentials(data))
-  //   .catch((reason) => {
-  //     console.log("Unable to load credentials", reason);
-  //   });
-  // return fetch("http://localhost:8723/verify?url="+encodeURIComponent(window.location.href))
-  //     .then(response => response.json())
-  //     .then(data => viewer._report.setCredentials(data))
-  //     .catch((reason) => {console.log("Unable to load credentials", reason)})
+  let fileUrl = window.location.href;
+  let report = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+  let baseurl = fileUrl.substring(0, fileUrl.lastIndexOf('/'));
+  let metadataUrl = baseurl + "/metadata.json";  
+  // // return fetch("http://localhost:8723/verify?url=" + encodeURIComponent(window.location.href))
+  // //   .then(response => response.json())
+  // //   .then(data => viewer._report.setCredentials(data))
+  // //   .catch((reason) => { console.log("Unable to load credentials", reason) })
+
+  return fetch(metadataUrl)
+    .then((response) => response.json())
+    .then(data => {
+      viewer._report.setCredentials(data)
+    })
+    .catch((reason) => {
+      console.log("Unable to load credentials", reason);
+    });
 };
 
 function localName(e) {
@@ -319,8 +325,7 @@ Viewer.prototype._postProcessiXBRLNode = function (container, node, fact) {
           "ix-title",
           `<i>${escapeHtml(
             title
-          )}</i> (Extension). <i><br/>${sigCount} Signature${
-            sigCount === 1 ? "" : "s"
+          )}</i> (Extension). <i><br/>${sigCount} Signature${sigCount === 1 ? "" : "s"
           }</i>`
         );
       } else {
@@ -331,8 +336,7 @@ Viewer.prototype._postProcessiXBRLNode = function (container, node, fact) {
       if (sigCount > 0) {
         $(node).attr(
           "ix-title",
-          `${title} <br/><i>${sigCount} Signature${
-            sigCount === 1 ? "" : "s"
+          `${title} <br/><i>${sigCount} Signature${sigCount === 1 ? "" : "s"
           }</i>`
         );
         htmlTooltip = true;
@@ -437,7 +441,7 @@ Viewer.prototype.showElement = function (e, force) {
   }
 };
 
-Viewer.prototype.scrollIntoViewIfNeeded = function (e) {
+Viewer.prototype.scrollIntoViewIfNeeded = function (e) {  
   if (Element.prototype.scrollIntoViewIfNeeded)
     e[0].scrollIntoViewIfNeeded(true);
   else {
@@ -496,11 +500,12 @@ Viewer.prototype._ixIdsForElement = function (e) {
  * Takes an optional list of factIds corresponding to all facts that a click
  * falls within.  If omitted, it's treated as a click on a non-nested fact.
  */
-Viewer.prototype.selectElement = function (e, factIdList) {
+Viewer.prototype.selectElement = function (e, factIdList, scrollIntoView) {
+
   if (e !== null) {
-    var factId = this._ixIdsForElement(e)[0];
-    this.onSelect.fire(factId, factIdList);
-  } else {
+    var factId = this._ixIdsForElement(e)[0];    
+    this.onSelect.fire(factId, factIdList, scrollIntoView);
+  } else {    
     this.onSelect.fire(null);
   }
 };
@@ -513,7 +518,7 @@ Viewer.prototype.selectElementByClick = function (e) {
     .each(function () {
       eltSet = eltSet.concat(viewer._ixIdsForElement($(this)));
     });
-  this.selectElement(e, eltSet);
+  this.selectElement(e, eltSet, true);
 };
 
 Viewer.prototype._mouseEnter = function (e) {

@@ -500,12 +500,17 @@
 
         .start-facts-selection {
           color: #004CB5;
-          font-weight: bold;
+          font-weight: 500;
+          font-size: 16px;
           flex-grow: 1;
           height: 44px;
           background: #E4F3FE;
           border: 1px solid #BEE2FD;
           border-radius: 6px;
+
+          &:disabled {            
+            color: #94D1FC;
+          }
         }
 
         .facts-selection-mode-controls {

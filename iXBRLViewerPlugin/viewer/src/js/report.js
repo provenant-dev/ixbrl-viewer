@@ -20,7 +20,7 @@ import { ViewerOptions } from "./viewerOptions.js";
 import { setDefault } from "./util.js";
 import $ from 'jquery'
 
-export function iXBRLReport (data) {
+export function iXBRLReport(data) {
     this.data = data;
     // A map of IDs to Fact and Footnote objects
     this._items = {};
@@ -33,12 +33,12 @@ export function iXBRLReport (data) {
 /*
  * Set additional information about facts obtained from parsing the iXBRL.
  */
-iXBRLReport.prototype.setIXNodeMap = function(ixData) {
+iXBRLReport.prototype.setIXNodeMap = function (ixData) {
     this._ixNodeMap = ixData;
     this._initialize();
 }
 
-iXBRLReport.prototype.setCredentials = function(credData) {
+iXBRLReport.prototype.setCredentials = function (credData) {
     this._credentials = credData;
 }
 
@@ -47,7 +47,7 @@ iXBRLReport.prototype._initialize = function () {
     // Build an array of footnotes IDs in document order so that we can assign
     // numbers to foonotes
     var fnorder = Object.keys(this._ixNodeMap).filter((id) => this._ixNodeMap[id].footnote);
-    fnorder.sort((a,b) => this._ixNodeMap[a].docOrderindex - this._ixNodeMap[b].docOrderindex);
+    fnorder.sort((a, b) => this._ixNodeMap[a].docOrderindex - this._ixNodeMap[b].docOrderindex);
 
     // Create footnote objects for all footnotes, and associate facts with
     // those footnotes to allow 2 way fact <-> footnote navigation.
@@ -68,14 +68,19 @@ iXBRLReport.prototype._initialize = function () {
     this._assignSignatures();
 }
 
-iXBRLReport.prototype._assignSignatures = function() {
-    $.each(this._credentials, (said, vira) => {
+iXBRLReport.prototype._assignSignatures = function () {
+    $.each(this._credentials, (aid, vira) => {
+        // if ('attestation' in cred) {
+        //     let vira = {}
+        //     vira.oor = cred['oor']
+        //     vira.f = cred['attestation']['f']
+        // }
         if ('f' in vira) {
             let data = {}
-            if('oor' in vira) {
-                data = {t: 'oor', a: vira["oor"] };
+            if ('oor' in vira) {
+                data = { t: 'oor', a: vira["oor"] };
             } else if ('ecr' in vira) {
-                data = {t: 'ecr', a: vira["ecr"] };
+                data = { t: 'ecr', a: vira["ecr"] };
             } else {
                 return;
             }
@@ -91,7 +96,7 @@ iXBRLReport.prototype._assignSignatures = function() {
     })
 }
 
-iXBRLReport.prototype.getLabel = function(c, rolePrefix, showPrefix, viewerOptions) {
+iXBRLReport.prototype.getLabel = function (c, rolePrefix, showPrefix, viewerOptions) {
     rolePrefix = rolePrefix || 'std';
     var lang = this._viewerOptions.language;
     var labels = this.data.concepts[c].labels[rolePrefix]
@@ -106,7 +111,7 @@ iXBRLReport.prototype.getLabel = function(c, rolePrefix, showPrefix, viewerOptio
         else {
             label = labels["en"] || labels["en-us"];
         }
-        if (Object.keys(labels).length == 1) { 
+        if (Object.keys(labels).length == 1) {
             label = labels[Object.keys(labels)];
         }
         if (label === undefined) {
@@ -121,7 +126,7 @@ iXBRLReport.prototype.getLabel = function(c, rolePrefix, showPrefix, viewerOptio
     }
 }
 
-iXBRLReport.prototype.availableCredentials = function() {
+iXBRLReport.prototype.availableCredentials = function () {
     if (!this._availableCredentials) {
         this._availableCredentials = Object.keys(this._credentials)
     }
@@ -129,11 +134,11 @@ iXBRLReport.prototype.availableCredentials = function() {
     return this._availableCredentials;
 }
 
-iXBRLReport.prototype.credentials = function() {
+iXBRLReport.prototype.credentials = function () {
     return this._credentials;
 }
 
-iXBRLReport.prototype.fullSignatureCredentials = function() {
+iXBRLReport.prototype.fullSignatureCredentials = function () {
     let full = [];
     $.each(this._credentials, (said, vira) => {
         if (!('f' in vira)) {
@@ -144,10 +149,10 @@ iXBRLReport.prototype.fullSignatureCredentials = function() {
     return full;
 }
 
-iXBRLReport.prototype.availableLanguages = function() {
+iXBRLReport.prototype.availableLanguages = function () {
     if (!this._availableLanguages) {
         var map = {};
-        $.each(this.data.concepts, function (k,v) {
+        $.each(this.data.concepts, function (k, v) {
             $.each(v.labels, function (rolePrefx, ll) {
                 $.each(ll, function (lang, v) {
                     map[lang] = 1;
@@ -160,20 +165,20 @@ iXBRLReport.prototype.availableLanguages = function() {
     return this._availableLanguages;
 }
 
-iXBRLReport.prototype.languageNames = function() {
+iXBRLReport.prototype.languageNames = function () {
     return this.data.languages;
 }
 
-iXBRLReport.prototype.getItemById = function(id) {
+iXBRLReport.prototype.getItemById = function (id) {
     return this._items[id];
 }
 
 
-iXBRLReport.prototype.getIXNodeForItemId = function(id) {
+iXBRLReport.prototype.getIXNodeForItemId = function (id) {
     return this._ixNodeMap[id] || {};
 }
 
-iXBRLReport.prototype.facts = function() {
+iXBRLReport.prototype.facts = function () {
     var allItems = [];
     var report = this;
     $.each(this.data.facts, function (id, f) {
@@ -182,15 +187,15 @@ iXBRLReport.prototype.facts = function() {
     return allItems;
 }
 
-iXBRLReport.prototype.prefixMap = function() {
+iXBRLReport.prototype.prefixMap = function () {
     return this.data.prefixes;
 }
 
-iXBRLReport.prototype.qname = function(v) {
+iXBRLReport.prototype.qname = function (v) {
     return new QName(this.prefixMap(), v);
 }
 
-iXBRLReport.prototype.getChildRelationships = function(c, arcrole) {
+iXBRLReport.prototype.getChildRelationships = function (c, arcrole) {
     var rels = {}
     const elrs = this.data.rels[arcrole] || {};
     for (const elr in elrs) {
@@ -201,20 +206,20 @@ iXBRLReport.prototype.getChildRelationships = function(c, arcrole) {
     return rels;
 }
 
-iXBRLReport.prototype.getAnchors = function(concept) {
+iXBRLReport.prototype.getAnchors = function (concept) {
     var res = [];
     var report = this;
     if (this.usesAnchoring()) {
         $.each(this.data.rels["w-n"], function (elr, rr) {
-            $.each(rr, function(c, r) {
+            $.each(rr, function (c, r) {
                 if (concept.name == c) {
-                    $.each(r, function(i, v) { 
-                        res.push({concept: report.getConcept(v.t), wide: 0});
+                    $.each(r, function (i, v) {
+                        res.push({ concept: report.getConcept(v.t), wide: 0 });
                     });
-                } else 
-                    $.each(r, function(i, v) {
+                } else
+                    $.each(r, function (i, v) {
                         if (v.t == concept.name)
-                            res.push({concept: report.getConcept(c), wide: 1});
+                            res.push({ concept: report.getConcept(c), wide: 1 });
                     });
             });
         });
@@ -230,7 +235,7 @@ iXBRLReport.prototype.getAnchors = function(concept) {
  *
  * "rel" is modified to have a "src" property with the source concept.
  */
-iXBRLReport.prototype._reverseRelationships = function(arcrole) {
+iXBRLReport.prototype._reverseRelationships = function (arcrole) {
     if (!(arcrole in this._reverseRelationshipCache)) {
         const rrc = {};
         const elrs = this.data.rels[arcrole] || {};
@@ -247,7 +252,7 @@ iXBRLReport.prototype._reverseRelationships = function(arcrole) {
     return this._reverseRelationshipCache[arcrole];
 }
 
-iXBRLReport.prototype.getParentRelationships = function(c, arcrole) {
+iXBRLReport.prototype.getParentRelationships = function (c, arcrole) {
     var rels = {}
     for (const [elr, relSet] of Object.entries(this._reverseRelationships(arcrole))) {
         if (c in relSet) {
@@ -257,7 +262,7 @@ iXBRLReport.prototype.getParentRelationships = function(c, arcrole) {
     return rels;
 }
 
-iXBRLReport.prototype.getAlignedFacts = function(f, coveredAspects) {
+iXBRLReport.prototype.getAlignedFacts = function (f, coveredAspects) {
     var all = this.facts();
     var aligned = [];
     if (!coveredAspects) {
@@ -268,7 +273,7 @@ iXBRLReport.prototype.getAlignedFacts = function(f, coveredAspects) {
             aligned.push(ff);
         }
     });
-    return aligned; 
+    return aligned;
 }
 
 iXBRLReport.prototype.deduplicate = function (facts) {
@@ -276,11 +281,11 @@ iXBRLReport.prototype.deduplicate = function (facts) {
     $.each(facts, function (i, f) {
         var dupe = false;
         $.each(ff, function (j, of) {
-            if (of.isAligned(f,{})) {
+            if (of.isAligned(f, {})) {
                 dupe = true;
             }
         });
-        if (!dupe){
+        if (!dupe) {
             ff.push(f);
         }
     });
@@ -302,11 +307,11 @@ iXBRLReport.prototype.namespaceGroups = function () {
     return prefixes;
 }
 
-iXBRLReport.prototype.getConcept = function(name) {
+iXBRLReport.prototype.getConcept = function (name) {
     return new Concept(this, name);
 }
 
-iXBRLReport.prototype.getRoleLabel = function(rolePrefix, viewerOptions) {
+iXBRLReport.prototype.getRoleLabel = function (rolePrefix, viewerOptions) {
     /* This is currently hard-coded to "en" as the generator does not yet
      * support generic labels, and instead provides the (non-localisable) role
      * definition as a single "en" label.
@@ -314,14 +319,14 @@ iXBRLReport.prototype.getRoleLabel = function(rolePrefix, viewerOptions) {
     return this.data.roleDefs[rolePrefix]["en"];
 }
 
-iXBRLReport.prototype.documentSetFiles = function() {
+iXBRLReport.prototype.documentSetFiles = function () {
     return this.data.docSetFiles;
 }
 
-iXBRLReport.prototype.isDocumentSet = function() {
+iXBRLReport.prototype.isDocumentSet = function () {
     return this.data.docSetFiles !== undefined;
 }
 
-iXBRLReport.prototype.usesAnchoring = function() {
+iXBRLReport.prototype.usesAnchoring = function () {
     return this.data.rels["w-n"] !== undefined;
 }

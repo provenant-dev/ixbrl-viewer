@@ -25,26 +25,26 @@ export function Menu(elt) {
         e.stopPropagation();
     });
 
-    $('html').click(function(event) {
-        if ($(".content",elt).find($(event.target)).length === 0) {
+    $('html').click(function (event) {
+        if ($(".content", elt).find($(event.target)).length === 0) {
             menu.close();
         }
     });
 }
 
-Menu.prototype.reset = function() {
+Menu.prototype.reset = function () {
     this._elt.find(".content").empty();
 }
 
-Menu.prototype.close = function() {
+Menu.prototype.close = function () {
     this._elt.find(".content-container").hide();
 }
 
-Menu.prototype._add = function(item, after) {
+Menu.prototype._add = function (item, after) {
     var i;
     if (after !== undefined) {
         i = this._elt.find(".content > div").filter(function () {
-            return $(this).data('iv-menu-item-name') == after;     
+            return $(this).data('iv-menu-item-name') == after;
         });
     }
     if (i !== undefined && i.length > 0) {
@@ -55,7 +55,7 @@ Menu.prototype._add = function(item, after) {
     }
 }
 
-Menu.prototype.addCheckboxItem = function(name, callback, itemName, after) {
+Menu.prototype.addCheckboxItem = function (name, callback, itemName, after) {
     var menu = this;
     var item = $('<div class="item checkbox"></div>')
         .text(name)
@@ -63,12 +63,12 @@ Menu.prototype.addCheckboxItem = function(name, callback, itemName, after) {
         .click(function () {
             $(this).toggleClass("checked");
             callback($(this).hasClass("checked"));
-            menu.close(); 
+            menu.close();
         });
     this._add(item, after);
 }
 
-Menu.prototype.addCheckboxGroup = function(values, names, def, callback, name, after) {
+Menu.prototype.addCheckboxGroup = function (values, names, def, callback, name, after) {
     var menu = this;
     var group = $('<div class="group"></div>').data("iv-menu-item-name", name);
     this._add(group, after);
@@ -81,17 +81,17 @@ Menu.prototype.addCheckboxGroup = function(values, names, def, callback, name, a
                 group.find(".item.checkbox").removeClass("checked");
                 $(this).addClass("checked");
                 callback(v);
-                menu.close(); 
+                menu.close();
             });
         if (v == def) {
             item.addClass("checked");
         }
 
     });
-    
+
 }
 
-Menu.prototype.addCredentialItem = function(cred, idx, def, callback, name, after) {
+Menu.prototype.addCredentialItem = function (cred, idx, def, callback, name, after) {    
     var menu = this;
     let signType = ""
     let signer = ""
@@ -101,12 +101,14 @@ Menu.prototype.addCredentialItem = function(cred, idx, def, callback, name, afte
     img.css("display", "inline").removeClass("gleif-logo")
 
 
-    if("oor" in cred) {
+    if ("oor" in cred) {
         let oor = cred["oor"]
-        lei =  oor["LEI"]
+        lei = oor["LEI"]
         signer = oor["personLegalName"];
+        // let attestation = cred['attestation'];
+        // if ("f" in attestation) {
         if ("f" in cred) {
-            signType += "Partially Signed By "
+            signType += "Signed By ";  //"Partially Signed By "
         } else {
             signType += "Signed in Full By "
         }
@@ -116,8 +118,10 @@ Menu.prototype.addCredentialItem = function(cred, idx, def, callback, name, afte
         let ecr = cred["ecr"]
         lei = ecr["LEI"]
         signer = ecr["personLegalName"];
+        // let attestation = cred['attestation'];
+        // if ("f" in crattestationed) {
         if ("f" in cred) {
-            signType += "Partially Signed By "
+            signType += "Signed By ";  //"Partially Signed By "
         } else {
             signType += "Signed in Full By "
         }
@@ -135,7 +139,7 @@ Menu.prototype.addCredentialItem = function(cred, idx, def, callback, name, afte
 
     let td = $('<td style="padding-right: 5px;width:285px"></td>')
     tr.append(td)
-    td.append($('<b></b>').text(signType+signer))
+    td.append($('<b></b>').text(signType + signer))
         .append($('<p></p>').text(role))
         .append($('<p></p>').text("LEI: " + lei))
 

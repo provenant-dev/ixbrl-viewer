@@ -27,6 +27,8 @@ import { Footnote } from "./footnote.js";
 import { escapeHtml } from "./util.js";
 
 const SEARCH_PAGE_SIZE = 100;
+const VIEW_MODE = "view";
+const SIGN_MODE = "sign";
 
 export function Inspector(iv) {
   /* Insert HTML and CSS styles into body */
@@ -43,6 +45,7 @@ export function Inspector(iv) {
   this._chart = new IXBRLChart();
   this._viewerOptions = new ViewerOptions();
   this._selectedFacts = [];
+  this._vdocViewerMode = VIEW_MODE;
 
   $(".collapsible-header").click(function () {
     var d = $(this).closest(".collapsible-section");
@@ -77,20 +80,26 @@ export function Inspector(iv) {
   });
 
   $(".start-facts-selection").click(function () {
+    // if (this._vdocViewerMode.toLowerCase() !== SIGN_MODE) {
+    //   return;
+    // }
+
     inspector.startFactSelection();
     inspector.toggleFactSelectionMode("start");
   });
 
   $(".cancel-facts-selection").click(function () {
-    inspector.toggleFactSelectionMode("cancel");
     inspector.resetFactSelectionMode();
+    inspector.toggleFactSelectionMode("cancel");
   });
 
   $(".done-facts-selection").click(function () {
+    // if (this._vdocViewerMode !== SIGN_MODE) {
+    //   return;
+    // }
 
     inspector.doneFactSelection();
-    inspector.toggleFactSelectionMode("done");
-    // debugger;
+    inspector.toggleFactSelectionMode("done");    
     // var selectedFacts = inspector.selectedFacts();
     // if (
     //   selectedFacts != null &&
@@ -139,7 +148,7 @@ Inspector.prototype.initialize = function (report) {
 
 Inspector.prototype.setViewer = function (viewer) {
   this._viewer = viewer;
-  viewer.onSelect.add((id, eltSet) => this.selectItem(id, eltSet));
+  viewer.onSelect.add((id, eltSet, scrollIntoView) => this.selectItem(id, eltSet, undefined, scrollIntoView));
   viewer.onMouseEnter.add((id) => this.viewerMouseEnter(id));
   viewer.onMouseLeave.add((id) => this.viewerMouseLeave(id));
   $(".ixbrl-next-tag").click(() => viewer.selectNextTag());
@@ -147,6 +156,7 @@ Inspector.prototype.setViewer = function (viewer) {
   this.search();
   //enable search mode to show list of fact onload
   $("#inspector").addClass("search-mode")
+  this.viewerOnLoadComplete();
 };
 
 /*
@@ -160,13 +170,54 @@ Inspector.prototype.handleFactDeepLink = function () {
 };
 
 Inspector.prototype.handleMessage = function (event) {
-  var jsonString = event.originalEvent.data;
-  var data = JSON.parse(jsonString);
+  if ((event.originalEvent != null && event.originalEvent != undefined)
+    && (event.originalEvent.data != null && event.originalEvent.data != undefined)) {
 
-  if (data.task == "SHOW_FACT") {
-    this.selectItem(data.factId, undefined, true);
-  } else {
-    console.log("Not handling unsupported task message: " + jsonString);
+    if (event.originalEvent.data.vdoc_manager) {
+      this.handleDocumentManagerMessage(event);
+    }
+    else {
+      var jsonString = event.originalEvent.data;
+      var data;
+      try {
+        data = JSON.parse(jsonString);
+      } catch (e) {
+        console.log("PostMessage data is not valid json");
+        return;
+      }
+      console.log("PostMessage received with message: " + jsonString);
+      if (data.task == "SHOW_FACT") {
+        this.selectItem(data.factId, undefined, true);
+      } else {
+        console.log("Not handling unsupported task message: " + jsonString);
+      }
+    }
+  }
+};
+
+Inspector.prototype.handleDocumentManagerMessage = function (event) {  
+  var vdocManagerEvent = event.originalEvent.data.vdoc_manager;
+  if (vdocManagerEvent.channel === "vdoc_manager_ixbrl_viewer_frame") {
+    if (vdocManagerEvent.task === "DOCUMENT_VIEWER_MODE") {
+      this._vdocViewerMode = vdocManagerEvent.mode;
+      if (this._vdocViewerMode === VIEW_MODE) {
+        $(".start-facts-selection").attr("disabled", true);
+      }
+      else if (this._vdocViewerMode === SIGN_MODE) {
+        $(".start-facts-selection").attr("disabled", false);
+      }
+    }
+    else if (vdocManagerEvent.task === "SESSION_SELECTED_FACT_ID_LIST") {
+      var oldFactIds = vdocManagerEvent.factIds;
+      if (oldFactIds != null && oldFactIds != undefined && oldFactIds.length > 0) {
+        for (var i = 0; i < oldFactIds.length; i++) {
+          this.selectFactForSigning(oldFactIds[i]);
+        }
+        this.loadAllFacts();
+        this.sendSelectedFactsToParentWindow(true);
+      }
+    }
+
   }
 };
 
@@ -226,6 +277,8 @@ Inspector.prototype.buildSignaturesMenu = function () {
 
 Inspector.prototype.highlightTags = function (checked, credId) {
   let cred = this._report.credentials()[credId];
+  // let attestation = this._report.credentials()[credId];
+  // let cred = attestation['attestation'];
   if ("f" in cred) {
     let factIds = cred["f"].map((fact) => {
       return fact["i"];
@@ -248,6 +301,8 @@ Inspector.prototype.highlightSignedTags = function (
   signedClass
 ) {
   let cred = this._report.credentials()[credId];
+  // let attestation = this._report.credentials()[credId];
+  // let cred = attestation['attestation'];
   if ("f" in cred) {
     let factIds = cred["f"].map((fact) => {
       return fact["i"];
@@ -554,8 +609,7 @@ Inspector.prototype._calculationHTML = function (fact, elr) {
 };
 
 Inspector.prototype._signatureHTML = function (fact, elr) {
-  let a = new Accordian();
-
+  let a = new Accordian();  
   fact.signatures().forEach(function (signature) {
     let table = $('<table class="fact-properties"><tbody></tbody></table>');
     let tbody = table.find("tbody");
@@ -973,7 +1027,7 @@ Inspector.prototype.update = function () {
  * If itemIdList is omitted, the currently selected item list is reset to just
  * the primary item.
  */
-Inspector.prototype.selectItem = function (id, itemIdList, force) {
+Inspector.prototype.selectItem = function (id, itemIdList, force, scrollIntoView) {
   if (itemIdList === undefined) {
     this._currentItemList = [this._report.getItemById(id)];
   } else {
@@ -982,7 +1036,7 @@ Inspector.prototype.selectItem = function (id, itemIdList, force) {
       this._currentItemList.push(this._report.getItemById(itemIdList[i]));
     }
   }
-  this.switchItem(id, force);
+  this.switchItem(id, force, scrollIntoView);
   this.notifySelectItem(id);
 };
 
@@ -1003,7 +1057,7 @@ Inspector.prototype.notifySelectItem = function (id) {
  *
  * For footnotes, we currently only support a single footnote being selected.
  */
-Inspector.prototype.switchItem = function (id, force) {
+Inspector.prototype.switchItem = function (id, force, scrollIntoView) {
   if (id !== null) {
     this._currentItem = this._report.getItemById(id);
     this._viewer.showItemById(id, force);
@@ -1012,8 +1066,36 @@ Inspector.prototype.switchItem = function (id, force) {
     this._currentItem = null;
     this._viewer.clearHighlighting();
   }
+  //this.update();
   this.update();
-  this.update();
+  if (id !== null && scrollIntoView) {
+    this.scrollIntoViewIfNeeded(id);
+  }
+};
+
+Inspector.prototype.scrollIntoViewIfNeeded = function (id) {
+  var fact = this._report.getItemById(id);
+  if (fact && fact instanceof Fact) {
+
+    var factRowElement = $("#inspector .search-results .fact-list-item")
+      .filter(function () {
+        return $(this).data("ivid") == fact.id;
+      });
+    if (factRowElement != null && factRowElement.length > 0) {
+      if (Element.prototype.scrollIntoViewIfNeeded) {
+        factRowElement[0].scrollIntoViewIfNeeded(true);
+      }
+      else {
+        var viewTop = $("#inspector").scrollTop();
+        var viewBottom = viewTop + $("#inspector .search-results").height();
+        var eTop = factRowElement.offset().top;
+        var eBottom = eTop + factRowElement.height();
+        if (eTop < viewTop || eBottom > viewBottom) {
+          factRowElement[0].scrollIntoView({ block: "center" });
+        }
+      }
+    }
+  }
 };
 
 Inspector.prototype.selectDefaultLanguage = function () {
@@ -1047,9 +1129,14 @@ Inspector.prototype.handleFactsTabSelection = function (event) {
   if (selectedTab.hasClass("selected"))
     return;
 
+  // If in fact selection mode, first remove it and then change tab
+  if ($("#inspector").hasClass('facts-selection-mode')) {
+    this.toggleFactSelectionMode("cancel");
+  }
+
   $(".facts-tab").removeClass("selected");
   selectedTab.addClass("selected");
-  
+
   if (selectedTab.prop("id") === "facts-tab-all") {
     this.loadAllFacts();
   }
@@ -1063,12 +1150,11 @@ Inspector.prototype.handleFactsTabSelection = function (event) {
 
 
 Inspector.prototype.loadAllFacts = function () {
-  debugger;
   var inspector = this;
   inspector.search();
 
   var factIds = inspector.getSelectedFacts();
-  if (factIds.length > 0) {    
+  if (factIds.length > 0) {
     for (var i = 0; i < factIds.length; i++) {
       $("#inspector .search-results .fact-list-item")
         .filter(function () {
@@ -1082,7 +1168,6 @@ Inspector.prototype.loadAllFacts = function () {
 };
 
 Inspector.prototype.loadSelectedFacts = function () {
-  debugger;
   var inspector = this;
   var viewer = inspector._viewer;
   var container = $("#inspector .search-results .results");
@@ -1122,21 +1207,19 @@ Inspector.prototype.loadSelectedFacts = function () {
   }
 };
 
-
 Inspector.prototype.loadUnselectedFacts = function () {
-  debugger;
   var inspector = this;
   inspector.search();
 
   var factIds = inspector.getSelectedFacts();
-  if (factIds.length > 0) {    
+  if (factIds.length > 0) {
     for (var i = 0; i < factIds.length; i++) {
       $("#inspector .search-results .fact-list-item")
         .filter(function () {
           return $(this).data("ivid") == factIds[i];
         })
-        .remove();        
-    }   
+        .remove();
+    }
   }
 };
 
@@ -1208,28 +1291,83 @@ Inspector.prototype.toggleFactSelectionMode = function (eventType) {
 };
 
 Inspector.prototype.startFactSelection = function () {
-  // $("#inspector .search-results .fact-list-item").removeClass("selected");
-  // $("#inspector .search-results .fact-list-item")
-  //   .filter(function () {
-  //     return $(this).data("ivid") == cf.id;
-  //   })
-  //   .addClass("selected");  
+
 };
 
 Inspector.prototype.doneFactSelection = function () {
   var inspector = this;
-  inspector.setSelectedFacts([]);
+  var selectedTab = $("#inspector .facts-tabs-section .facts-tab.selected");
+  if (selectedTab.prop("id") === "facts-tab-all" ||
+    selectedTab.prop("id") === "facts-tab-selected") {
+    inspector.setSelectedFacts([]);
+  }
+
   $('.fact-checkbox:input[type=checkbox]:checked').each(function () {
     var factId = $(this).closest(".fact-list-item").data("ivid");
     inspector.selectFactForSigning(factId);
-  });  
-  inspector.loadAllFacts();
+  });
+
+  if (selectedTab.prop("id") === "facts-tab-all") {
+    inspector.loadAllFacts();
+  }
+  else if (selectedTab.prop("id") === "facts-tab-selected") {
+    inspector.loadSelectedFacts();
+  }
+  else if (selectedTab.prop("id") === "facts-tab-unselected") {
+    this.loadUnselectedFacts();
+  }
+  inspector.sendSelectedFactsToParentWindow();
 };
 
 Inspector.prototype.resetFactSelectionMode = function () {
 
 };
 
+Inspector.prototype.sendSelectedFactsToParentWindow = function (areSessionFacts = false) {
+  var inspector = this;
+  var selectedFactIds = inspector.getSelectedFacts();
+  var extractedFacts = [];
+  if (selectedFactIds != null && selectedFactIds != undefined && selectedFactIds.length > 0) {
+
+    $.each(selectedFactIds, (i, factId) => {
+      var fact = inspector._report.getItemById(factId);
+      if (fact instanceof Fact) {
+        var f = {
+          i: fact.id,
+          t: "",
+          d: "",
+          v: fact.f.v,
+          c: fact.f.a.c,
+          e: fact.f.a.e,
+          p: fact.f.a.p,
+          f: fact.f.f,
+        };
+        extractedFacts.push(f);
+      }
+    });
+  }
+
+  console.log(' ====>>>> ixbrl-viewer extracted facts :: ' + JSON.stringify(extractedFacts));
+
+  const factsMessage = {
+    vdoc_manager: {
+      channel: 'vdoc_manager_ixbrl_viewer_frame',
+      task: areSessionFacts ? 'SESSION_FACTS' : 'EXTRACTED_FACTS',
+      facts: extractedFacts
+    },
+  };
+  window.parent.postMessage(factsMessage, '*');
+};
+
+Inspector.prototype.viewerOnLoadComplete = function () {
+  const onLoadMessage = {
+    vdoc_manager: {
+      channel: 'vdoc_manager_ixbrl_viewer_frame',
+      task: 'IXBRL_VIEWER_LOAD_COMPLETE'
+    },
+  };
+  window.parent.postMessage(onLoadMessage, '*');
+};
 
 // Inspector.prototype.initFactSelection = function () {
 //   $(".fact-select-button").removeClass("hide");

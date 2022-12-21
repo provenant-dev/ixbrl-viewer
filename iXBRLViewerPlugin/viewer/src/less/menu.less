@@ -15,8 +15,7 @@
 #ixv {
   #top-bar {
     .menu {
-      position: absolute;
-      right: 0;
+      position: absolute;      
       top: 0;
       line-height: @top-bar-height;
       cursor: pointer;
@@ -37,7 +36,7 @@
       .content-container {
         position: fixed;
         top: @top-bar-height;
-        right: 0;
+        
         bottom: 0;
         display: none;
 
@@ -134,7 +133,16 @@
     }
 
     .signature-menu {
-      right: 180px;
+      right: 0;
+
+      .content-container {
+        right: 4;
+      }
+    }
+
+    .display-option-menu {
+      // right: 0;
+      left: 10px;
     }
   }
 }
