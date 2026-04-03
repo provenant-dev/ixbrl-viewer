@@ -15,18 +15,18 @@ ADD . /build/
 
 # The following command replaces the @VERSION@ string in setup.py and package.json
 # with the tagged version number from GIT_TAG or `0.0.0` if GIT_TAG is not set
+# package-lock.json is also updated
 ARG VERSION=${GIT_TAG:-0.0.0}
 RUN echo "Version = $VERSION"
 # Update line 6 in setup.py
 RUN sed -i "6 s/0.0.0/$VERSION/" setup.py
-# Update line 3 in package.json
-RUN sed -i "3 s/0.0.0/$VERSION/" package.json
+RUN npm version $VERSION --no-git-tag-version
 
 # build ixbrlviewer.js
 RUN apt-get update && apt-get install -y curl && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash && \
     apt-get install -y nodejs build-essential
-RUN npm install
+RUN npm ci
 RUN make prod
 
 # javascript tests

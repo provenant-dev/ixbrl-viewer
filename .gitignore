@@ -1,6 +1,4 @@
 node_modules
-package_lock.json
-package-lock.json
 iXBRLViewerPlugin/viewer/*.xhtml
 iXBRLViewerPlugin/viewer/dist/ixbrlviewer.dev.js
 iXBRLViewerPlugin/viewer/font
