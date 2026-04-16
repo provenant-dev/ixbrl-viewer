@@ -1,3 +1,7 @@
+# ARCHIVED DUE TO CRITICAL SECURITY BUGS
+
+Per npm, this repo contains many security vulnerabilities, including 12 high priority vulns and 24 critical priority vulns. Do not un-archive and use this repo without committing to resolving these vulnerabilities as the first step of continued development. This should most likely involve updating the code from upstream. Maintaining this repo is not presently a key priority, so the choice has been made to archive it until such time that it can receive appropriate maintenance.
+
 # AMANA Fork of the Workiva iXBRL Viewer
 
 The [Workiva](https://www.workiva.com) iXBRL Viewer allows [Inline XBRL](https://www.xbrl.org/ixbrl) (or iXBRL) reports to be viewed interactively in a web browser.  The viewer allows users to access the tagged XBRL data embedded in an iXBRL report.  Key features include:
